@@ -1,5 +1,5 @@
 {
-  "version": "1.0",
+  "version": "1.1",
   "network": "asdfghjkl",
   "subnet": "192.168.4.0/24",
   "updated": "2026-02-21",
@@ -10,7 +10,8 @@
       "type": "router",
       "vendor": "Xfinity",
       "hardware": "Xfinity Gateway",
-      "description": "Gateway router — network edge",
+      "description": "Gateway router — network edge. All LAN devices connect through this.",
+      "children": ["alexandria", "cecilia", "octavia", "alice", "lucidia", "aria", "pandora", "calliope", "athena", "phantom", "specter", "ember", "wraith", "vesper", "cortana"],
       "status": "online"
     },
     "alexandria": {
@@ -21,9 +22,47 @@
       "hardware": "Mac M1",
       "os": "macOS Sonoma",
       "role": "command-center",
+      "parent": "meridian",
       "description": "Alexa's primary workstation. Orchestrates all agents, runs Claude Code, manages deployments.",
       "ssh": false,
-      "usb_devices": ["siren", "lyra", "wavecube"],
+      "attached_devices": {
+        "siren": {
+          "connection": "usb",
+          "bus": "USB",
+          "vid": "0xffff",
+          "pid": "0xffff",
+          "vendor": "Sipeed",
+          "hardware": "Bouffalo BL808 RISC-V",
+          "os": "FreeRTOS/POSIX",
+          "firmware": "firmware.bin (479KB)",
+          "capabilities": ["wifi", "serial-shell", "ota", "udp-broadcast", "dma-video"],
+          "serial_baud": 2000000,
+          "status": "mass-storage-mode"
+        },
+        "lyra": {
+          "connection": "usb",
+          "bus": "USB",
+          "vid": "0x2485",
+          "pid": "0x4330",
+          "vendor": "Kalezo",
+          "hardware": "USB MIDI interface",
+          "description": "WaveQube MIDI controller",
+          "status": "online"
+        },
+        "wavecube": {
+          "connection": "usb",
+          "bus": "USB",
+          "vid": "0x1a86",
+          "pid": "0x7523",
+          "vendor": "QinHeng CH340",
+          "hardware": "ESP32 + touchscreen",
+          "os": "BLACKROAD OS ENHANCED v2.0",
+          "serial_baud": 115200,
+          "apps": ["dashboard", "weather", "crypto", "browser", "snake", "network", "settings", "portfolio"],
+          "capabilities": ["wifi", "touch-input", "serial-control", "midi"],
+          "status": "disconnected"
+        }
+      },
       "status": "online"
     },
     "cecilia": {
@@ -31,16 +70,35 @@
       "mac": "88:a2:9e:3b:eb:72",
       "type": "pi",
       "vendor": "Raspberry Pi",
-      "hardware": "Pi 5 + Hailo-8 (26 TOPS) + 500GB NVMe",
+      "hardware": "Pi 5 8GB",
       "os": "Debian 13",
       "ssh": "SSH-2.0-OpenSSH_10.0p2 Debian-7",
       "ssh_user": "pi",
       "http": true,
       "role": "primary-ai-agent",
+      "parent": "meridian",
       "description": "Primary AI agent. Runs CECE OS (68 sovereign apps). Hailo-8 accelerator for edge AI inference.",
       "tailscale": "100.72.180.98",
       "services": ["cece-os", "ollama", "cloudflared"],
-      "compute_tops": 26,
+      "attached_devices": {
+        "hailo8": {
+          "connection": "m.2",
+          "bus": "PCIe",
+          "vendor": "Hailo",
+          "hardware": "Hailo-8 AI Accelerator",
+          "compute_tops": 26,
+          "description": "26 TOPS neural network accelerator. M.2 key-M form factor via Pi 5 HAT.",
+          "status": "online"
+        },
+        "cecilia-nvme": {
+          "connection": "usb",
+          "bus": "USB 3.0",
+          "hardware": "500GB NVMe SSD",
+          "description": "Primary storage for CECE OS, models, and data.",
+          "capacity_gb": 500,
+          "status": "online"
+        }
+      },
       "status": "online"
     },
     "octavia": {
@@ -53,10 +111,12 @@
       "ssh": "SSH-2.0-OpenSSH_9.2p1 Debian-2+deb12u7",
       "ssh_user": "pi",
       "role": "primary-compute",
+      "parent": "meridian",
       "description": "ML acceleration engineer. Primary compute for inference and batch processing.",
       "tailscale": "100.66.235.47",
       "services": ["ollama", "agent-runtime"],
       "agent_capacity": 22500,
+      "attached_devices": {},
       "status": "online"
     },
     "alice": {
@@ -70,9 +130,11 @@
       "ssh_user": "alice",
       "http": true,
       "role": "worker",
+      "parent": "meridian",
       "description": "Agent coordinator. Gateway node, distributed compute, lifecycle management.",
       "tailscale": "100.77.210.18",
       "services": ["agent-management", "coordination"],
+      "attached_devices": {},
       "status": "online"
     },
     "lucidia": {
@@ -80,12 +142,31 @@
       "mac": null,
       "type": "pi",
       "vendor": "Raspberry Pi",
-      "hardware": "Pi 5 + Pironman case + 1TB NVMe",
+      "hardware": "Pi 5 8GB",
       "role": "ai-inference",
+      "parent": "meridian",
       "description": "AI inference node. Multi-agent orchestration, NLU, anti-hallucination protocols.",
       "tailscale": "100.83.149.86",
       "services": ["ollama", "agent-orchestration"],
       "agent_capacity": 7500,
+      "attached_devices": {
+        "pironman": {
+          "connection": "case",
+          "vendor": "SunFounder",
+          "hardware": "Pironman 5 case",
+          "description": "All-in-one Pi 5 case with ICE Tower cooler, OLED status display, RGB fan, power button, M.2 NVMe slot.",
+          "features": ["active-cooling", "oled-display", "rgb-led", "safe-shutdown", "nvme-slot"],
+          "status": "online"
+        },
+        "lucidia-nvme": {
+          "connection": "m.2",
+          "bus": "PCIe via Pironman",
+          "hardware": "1TB NVMe SSD",
+          "description": "Primary storage. Mounted through Pironman's built-in M.2 slot.",
+          "capacity_gb": 1000,
+          "status": "offline"
+        }
+      },
       "status": "offline"
     },
     "aria": {
@@ -95,9 +176,11 @@
       "vendor": "Raspberry Pi",
       "hardware": "Pi 5",
       "role": "harmony",
+      "parent": "meridian",
       "description": "Data science lead. ML pipelines, research coordination, API services.",
       "tailscale": "100.109.14.17",
       "services": ["ml-pipelines", "data-analysis"],
+      "attached_devices": {},
       "status": "offline"
     },
     "anastasia": {
@@ -131,6 +214,13 @@
       "friendly_name": "Little TV",
       "api": "http://192.168.4.26:8060",
       "location": "Living Room",
+      "parent": "meridian",
+      "attached_devices": {
+        "calliope": {
+          "connection": "hdmi",
+          "description": "Roku Streaming Stick plugged into HDMI port. Has its own network IP (.33) but physically attached to pandora."
+        }
+      },
       "status": "online"
     },
     "calliope": {
@@ -142,6 +232,7 @@
       "friendly_name": "Roku Stick",
       "api": "http://192.168.4.33:8060",
       "location": "Bedroom",
+      "parent": "meridian",
       "status": "online"
     },
     "athena": {
@@ -152,6 +243,7 @@
       "hardware": "iPhone/iPad",
       "ports": [7000, 62078],
       "services": ["airplay", "lockdownd"],
+      "parent": "meridian",
       "status": "online"
     },
     "phantom": {
@@ -160,6 +252,7 @@
       "type": "mobile",
       "vendor": "Unknown (randomized MAC)",
       "description": "Phone with WiFi privacy",
+      "parent": "meridian",
       "status": "online"
     },
     "specter": {
@@ -168,6 +261,7 @@
       "type": "mobile",
       "vendor": "Unknown (randomized MAC)",
       "description": "Phone with WiFi privacy",
+      "parent": "meridian",
       "status": "online"
     },
     "ember": {
@@ -176,6 +270,7 @@
       "type": "iot",
       "vendor": "AltoBeam",
       "description": "Smart home IoT device",
+      "parent": "meridian",
       "status": "online"
     },
     "wraith": {
@@ -184,6 +279,7 @@
       "type": "unknown",
       "vendor": "Private",
       "description": "Silent device, no open ports",
+      "parent": "meridian",
       "status": "online"
     },
     "vesper": {
@@ -192,6 +288,7 @@
       "type": "unknown",
       "vendor": "Private",
       "description": "Silent device, no open ports",
+      "parent": "meridian",
       "status": "online"
     },
     "cortana": {
@@ -201,52 +298,54 @@
       "vendor": "Microsoft",
       "hardware": "Xbox or Surface",
       "description": "Xbox or Surface device",
+      "parent": "meridian",
       "status": "sleeping"
+    }
+  },
+  "device_tree": {
+    "_comment": "Physical device hierarchy. Every device-connected-to-device relationship.",
+    "meridian (router)": {
+      "alexandria (Mac M1)": {
+        "siren (USB: RISC-V)": {},
+        "lyra (USB: MIDI)": {},
+        "wavecube (USB: ESP32)": {}
+      },
+      "cecilia (Pi 5)": {
+        "hailo8 (PCIe: AI accelerator, 26 TOPS)": {},
+        "cecilia-nvme (USB: 500GB NVMe)": {}
+      },
+      "octavia (Pi 5)": {},
+      "alice (Pi 4)": {},
+      "lucidia (Pi 5)": {
+        "pironman (case: cooler + OLED + NVMe slot)": {
+          "lucidia-nvme (M.2: 1TB NVMe)": {}
+        }
+      },
+      "aria (Pi 5)": {},
+      "pandora (Roku TV)": {
+        "calliope (HDMI: Roku Stick)": {}
+      },
+      "athena (mobile)": {},
+      "phantom (mobile)": {},
+      "specter (mobile)": {},
+      "ember (IoT)": {},
+      "wraith (unknown)": {},
+      "vesper (unknown)": {},
+      "cortana (console)": {}
     },
-    "siren": {
-      "connection": "usb",
-      "host": "alexandria",
-      "vid": "0xffff",
-      "pid": "0xffff",
-      "vendor": "Sipeed",
-      "hardware": "Bouffalo BL808 RISC-V",
-      "os": "FreeRTOS/POSIX",
-      "firmware": "firmware.bin (479KB)",
-      "capabilities": ["wifi", "serial-shell", "ota", "udp-broadcast", "dma-video"],
-      "serial_baud": 2000000,
-      "status": "mass-storage-mode"
-    },
-    "lyra": {
-      "connection": "usb",
-      "host": "alexandria",
-      "vid": "0x2485",
-      "pid": "0x4330",
-      "vendor": "Kalezo",
-      "hardware": "USB MIDI interface",
-      "description": "WaveQube MIDI controller",
-      "status": "online"
-    },
-    "wavecube": {
-      "connection": "usb",
-      "host": "alexandria",
-      "vid": "0x1a86",
-      "pid": "0x7523",
-      "vendor": "QinHeng CH340",
-      "hardware": "ESP32 + touchscreen",
-      "os": "BLACKROAD OS ENHANCED v2.0",
-      "serial_baud": 115200,
-      "apps": ["dashboard", "weather", "crypto", "browser", "snake", "network", "settings", "portfolio"],
-      "capabilities": ["wifi", "touch-input", "serial-control", "midi"],
-      "status": "disconnected"
+    "cloud (DigitalOcean)": {
+      "anastasia (Droplet)": {},
+      "gematria (Droplet)": {}
     }
   },
   "totals": {
-    "all": 22,
-    "lan": 17,
-    "usb": 3,
+    "all_named": 22,
+    "lan_networked": 15,
+    "sub_devices": 6,
     "cloud": 2,
     "online": 15,
     "offline": 2,
-    "disconnected": 1
+    "disconnected": 1,
+    "sleeping": 1
   }
 }

@@ -6,18 +6,58 @@
 
 ---
 
-## Device Fleet (22 devices)
+## Device Fleet (22 named devices + 6 sub-devices)
 
-### Compute Nodes (Raspberry Pi + Mac)
+### Device Tree
 
-| Name | IP | Tailscale | Hardware | Role | Status |
-|------|-----|-----------|----------|------|--------|
-| **alexandria** | 192.168.4.28 | — | Mac M1 | Command center | Online |
-| **cecilia** | 192.168.4.89 | 100.72.180.98 | Pi 5 + Hailo-8 + 500GB NVMe | Primary AI agent (CECE OS) | Online |
-| **octavia** | 192.168.4.38 | 100.66.235.47 | Pi 5 | Primary compute | Online |
-| **alice** | 192.168.4.49 | 100.77.210.18 | Pi 4 | Worker / coordinator | Online |
-| **lucidia** | 192.168.4.81 | 100.83.149.86 | Pi 5 + Pironman + 1TB NVMe | AI inference | Offline |
-| **aria** | 192.168.4.82 | 100.109.14.17 | Pi 5 | Data science / harmony | Offline |
+Every physical connection at a glance. Devices connect to devices.
+
+```
+meridian (Xfinity Router, .1)
+├── alexandria (Mac M1, .28) ─── COMMAND CENTER
+│   ├── siren       (USB) Sipeed BL808 RISC-V
+│   ├── lyra        (USB) Kalezo MIDI interface
+│   └── wavecube    (USB) ESP32 + touchscreen, BlackRoad OS Enhanced v2.0
+│
+├── cecilia (Pi 5, .89) ─── PRIMARY AI AGENT / CECE OS
+│   ├── hailo8      (PCIe/M.2) Hailo-8 AI Accelerator — 26 TOPS
+│   └── cecilia-nvme (USB 3.0) 500GB NVMe SSD
+│
+├── octavia (Pi 5, .38) ─── PRIMARY COMPUTE
+├── alice (Pi 4, .49) ─── WORKER / COORDINATOR
+│
+├── lucidia (Pi 5, .81) ─── AI INFERENCE [offline]
+│   └── pironman    (case) SunFounder Pironman 5 — cooler, OLED, RGB, NVMe slot
+│       └── lucidia-nvme (M.2) 1TB NVMe SSD
+│
+├── aria (Pi 5, .82) ─── DATA SCIENCE [offline]
+│
+├── pandora (65" Roku TV, .26) ─── LIVING ROOM
+│   └── calliope    (HDMI) Roku Streaming Stick Plus
+│
+├── athena (.27) iPhone/iPad
+├── phantom (.88) Phone (privacy MAC)
+├── specter (.92) Phone (privacy MAC)
+├── ember (.22) AltoBeam IoT
+├── wraith (.44) Silent device
+├── vesper (.45) Silent device
+└── cortana (.90) Xbox/Surface [sleeping]
+
+cloud (DigitalOcean)
+├── anastasia (174.138.44.45) ─── EDGE COMPUTE
+└── gematria  (159.65.43.12) ─── CLOUD ORACLE
+```
+
+### Compute Nodes
+
+| Name | IP | Tailscale | Hardware | Attached | Role | Status |
+|------|-----|-----------|----------|----------|------|--------|
+| **alexandria** | .28 | — | Mac M1 | siren, lyra, wavecube (USB) | Command center | Online |
+| **cecilia** | .89 | 100.72.180.98 | Pi 5 | Hailo-8 (26 TOPS), 500GB NVMe | Primary AI agent | Online |
+| **octavia** | .38 | 100.66.235.47 | Pi 5 | — | Primary compute | Online |
+| **alice** | .49 | 100.77.210.18 | Pi 4 | — | Worker / coordinator | Online |
+| **lucidia** | .81 | 100.83.149.86 | Pi 5 | Pironman case, 1TB NVMe | AI inference | Offline |
+| **aria** | .82 | 100.109.14.17 | Pi 5 | — | Data science | Offline |
 
 ### Cloud Nodes (DigitalOcean)
 
@@ -26,70 +66,75 @@
 | **anastasia** | 174.138.44.45 | 100.94.33.37 | Edge compute (Shellfish) | Online |
 | **gematria** | 159.65.43.12 | 100.108.132.8 | Cloud oracle / API | Online |
 
+### Sub-Devices (attached to hosts)
+
+| Name | Host | Connection | Hardware | Status |
+|------|------|------------|----------|--------|
+| **hailo8** | cecilia | PCIe M.2 | Hailo-8 AI Accelerator (26 TOPS) | Online |
+| **cecilia-nvme** | cecilia | USB 3.0 | 500GB NVMe SSD | Online |
+| **pironman** | lucidia | case | SunFounder Pironman 5 (cooler, OLED, NVMe slot) | Online |
+| **lucidia-nvme** | lucidia | M.2 via Pironman | 1TB NVMe SSD | Offline |
+| **siren** | alexandria | USB | Sipeed BL808 RISC-V (FreeRTOS) | Mass-storage |
+| **lyra** | alexandria | USB | Kalezo MIDI interface | Online |
+| **wavecube** | alexandria | USB | ESP32 + touchscreen (BlackRoad OS Enhanced) | Disconnected |
+| **calliope** | pandora | HDMI | Roku Streaming Stick Plus 3830R | Online |
+
 ### Media & Entertainment
 
 | Name | IP | Hardware | Location | Status |
 |------|-----|----------|----------|--------|
-| **pandora** | 192.168.4.26 | 65" Roku TV (65R4CX) | Living Room | Online |
-| **calliope** | 192.168.4.33 | Roku Streaming Stick Plus | Bedroom | Online |
-| **cortana** | 192.168.4.90 | Xbox / Surface | — | Sleeping |
+| **pandora** | .26 | 65" Roku TV (65R4CX) | Living Room | Online |
+| **calliope** | .33 | Roku Stick Plus (plugged into pandora) | Bedroom | Online |
+| **cortana** | .90 | Xbox / Surface | — | Sleeping |
 
 ### Mobile Devices
 
 | Name | IP | Hardware | Status |
 |------|-----|----------|--------|
-| **athena** | 192.168.4.27 | iPhone/iPad (AirPlay) | Online |
-| **phantom** | 192.168.4.88 | Phone (privacy MAC) | Online |
-| **specter** | 192.168.4.92 | Phone (privacy MAC) | Online |
-
-### USB Peripherals (attached to alexandria)
-
-| Name | Hardware | Vendor | Status |
-|------|----------|--------|--------|
-| **siren** | Bouffalo BL808 RISC-V | Sipeed | Mass-storage mode |
-| **lyra** | USB MIDI interface | Kalezo | Online |
-| **wavecube** | ESP32 + touchscreen | QinHeng CH340 | Disconnected |
+| **athena** | .27 | iPhone/iPad (AirPlay) | Online |
+| **phantom** | .88 | Phone (privacy MAC) | Online |
+| **specter** | .92 | Phone (privacy MAC) | Online |
 
 ### IoT & Unknown
 
 | Name | IP | Vendor | Description | Status |
 |------|-----|--------|-------------|--------|
-| **ember** | 192.168.4.22 | AltoBeam | Smart home IoT | Online |
-| **wraith** | 192.168.4.44 | Private | Silent, no open ports | Online |
-| **vesper** | 192.168.4.45 | Private | Silent, no open ports | Online |
+| **ember** | .22 | AltoBeam | Smart home IoT | Online |
+| **wraith** | .44 | Private | Silent, no open ports | Online |
+| **vesper** | .45 | Private | Silent, no open ports | Online |
 
 ---
 
 ## Network Topology
 
 ```
-                         INTERNET
-                            │
-                    ┌───────▼───────┐
-                    │   Cloudflare   │  CDN, DNS, Tunnel
-                    │   (QUIC)       │  tunnel: blackroad
-                    └───────┬───────┘
-                            │
-          ┌─────────────────┼─────────────────┐
-          │                 │                 │
-   ┌──────▼──────┐  ┌──────▼──────┐  ┌───────▼──────┐
-   │  anastasia  │  │  gematria   │  │   meridian   │
-   │ 174.138.44  │  │ 159.65.43   │  │ 192.168.4.1  │
-   │  DO droplet │  │  DO droplet │  │    Router     │
-   └─────────────┘  └─────────────┘  └───────┬──────┘
-                                              │
-                              ┌────────────┬──┴──┬────────────┐
-                              │            │     │            │
-                       ┌──────▼──┐  ┌──────▼─┐ ┌─▼──────┐ ┌──▼──────┐
-                       │alexandria│  │cecilia │ │octavia │ │ alice   │
-                       │  .28    │  │  .89   │ │  .38   │ │  .49    │
-                       │  Mac M1 │  │Pi5+H8  │ │  Pi 5  │ │  Pi 4   │
-                       └────┬────┘  └────────┘ └────────┘ └─────────┘
-                            │
-                     ┌──────┼──────┐
-                     │      │      │
-                  [siren] [lyra] [wavecube]
-                   USB     USB     USB
+                              INTERNET
+                                 │
+                         ┌───────▼───────┐
+                         │   Cloudflare   │  CDN, DNS, Tunnel (QUIC)
+                         └───────┬───────┘
+                                 │
+              ┌──────────────────┼──────────────────┐
+              │                  │                  │
+       ┌──────▼──────┐   ┌──────▼──────┐   ┌───────▼──────┐
+       │  anastasia  │   │  gematria   │   │   meridian   │
+       │ DO Droplet  │   │ DO Droplet  │   │  Router .1   │
+       └─────────────┘   └─────────────┘   └──────┬───────┘
+                                                   │
+              ┌──────────┬─────────┬───────────────┼─────────────┬──────────┐
+              │          │         │               │             │          │
+       ┌──────▼──┐ ┌─────▼───┐ ┌──▼─────┐  ┌─────▼────┐ ┌─────▼───┐ ┌────▼───┐
+       │alexandria│ │ cecilia │ │octavia │  │  alice   │ │ lucidia │ │  aria  │
+       │ Mac M1  │ │  Pi 5   │ │  Pi 5  │  │  Pi 4   │ │  Pi 5   │ │  Pi 5  │
+       │  .28    │ │  .89    │ │  .38   │  │  .49    │ │  .81    │ │  .82   │
+       └────┬────┘ └────┬────┘ └────────┘  └─────────┘ └────┬────┘ └────────┘
+            │            │                                    │
+     ┌──────┼──────┐  ┌──┴────────┐                    ┌─────┴─────┐
+     │      │      │  │           │                    │           │
+  [siren] [lyra] [wave│ [hailo8]  │ [nvme]         [pironman]     │
+   RISC-V  MIDI  cube │  26 TOPS  │ 500GB            case      [nvme]
+                      │  PCIe     │ USB 3            OLED       1TB
+                      │           │                  M.2 slot
 ```
 
 ### Tailscale Mesh (7 nodes)
