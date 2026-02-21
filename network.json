@@ -1,5 +1,5 @@
 {
-  "version": "1.0",
+  "version": "2.0",
   "updated": "2026-02-21",
   "lan": {
     "subnet": "192.168.4.0/24",
@@ -14,14 +14,15 @@
   },
   "tailscale": {
     "mesh_name": "blackroad",
+    "node_count": 7,
     "nodes": {
-      "cecilia":   { "tailscale_ip": "100.72.180.98",  "lan_ip": "192.168.4.89",  "os": "linux" },
-      "octavia":   { "tailscale_ip": "100.66.235.47",  "lan_ip": "192.168.4.38",  "os": "linux" },
-      "alice":     { "tailscale_ip": "100.77.210.18",  "lan_ip": "192.168.4.49",  "os": "linux" },
-      "lucidia":   { "tailscale_ip": "100.83.149.86",  "lan_ip": "192.168.4.81",  "os": "linux" },
-      "aria":      { "tailscale_ip": "100.109.14.17",  "lan_ip": "192.168.4.82",  "os": "linux" },
-      "anastasia": { "tailscale_ip": "100.94.33.37",   "lan_ip": null, "public_ip": "174.138.44.45", "os": "linux" },
-      "gematria":  { "tailscale_ip": "100.108.132.8",  "lan_ip": null, "public_ip": "159.65.43.12",  "os": "linux" }
+      "cecilia":   { "tailscale_ip": "100.72.180.98",  "lan_ip": "192.168.4.89",  "os": "linux", "platform": "raspberry_pi_5_hailo8" },
+      "octavia":   { "tailscale_ip": "100.66.235.47",  "lan_ip": "192.168.4.38",  "os": "linux", "platform": "raspberry_pi_5_pironman_hailo8" },
+      "alice":     { "tailscale_ip": "100.77.210.18",  "lan_ip": "192.168.4.49",  "os": "linux", "platform": "raspberry_pi_400" },
+      "lucidia":   { "tailscale_ip": "100.83.149.86",  "lan_ip": "192.168.4.81",  "os": "linux", "platform": "raspberry_pi_5_electrocookie" },
+      "aria":      { "tailscale_ip": "100.109.14.17",  "lan_ip": "192.168.4.82",  "os": "linux", "platform": "raspberry_pi_5_pironman_hailo8" },
+      "anastasia": { "tailscale_ip": "100.94.33.37",   "lan_ip": null, "public_ip": "174.138.44.45", "os": "linux", "platform": "digitalocean" },
+      "gematria":  { "tailscale_ip": "100.108.132.8",  "lan_ip": null, "public_ip": "159.65.43.12",  "os": "linux", "platform": "digitalocean" }
     }
   },
   "cloudflare_tunnel": {
@@ -29,7 +30,9 @@
     "tunnel_name": "blackroad",
     "protocol": "QUIC",
     "edge_location": "dfw08",
+    "edge_city": "Dallas",
     "running_on": "cecilia",
+    "running_on_ip": "192.168.4.89",
     "routes": {
       "agent.blackroad.ai": "localhost:8080",
       "api.blackroad.ai": "localhost:3000"
@@ -40,13 +43,15 @@
       "provider": "DigitalOcean",
       "public_ip": "174.138.44.45",
       "region": "nyc1",
-      "role": "edge-compute"
+      "role": "edge-compute",
+      "agent_name": "Shellfish"
     },
     "gematria": {
       "provider": "DigitalOcean",
       "public_ip": "159.65.43.12",
       "region": "nyc1",
-      "role": "cloud-oracle"
+      "role": "cloud-oracle",
+      "agent_name": "Codex-Infinity"
     }
   },
   "key_ports": {
@@ -56,7 +61,20 @@
     "ollama": 11434,
     "roku_api": 8060,
     "airplay": 7000,
+    "pixel_bridge": 8765,
     "wireguard": 51820,
     "mcp_bridge": 8420
+  },
+  "ollama_endpoints": {
+    "octavia": {
+      "url": "http://192.168.4.38:11434",
+      "models": ["qwen2.5-coder:32b", "deepseek-coder:6.7b", "mistral:7b", "qwen2.5:7b"],
+      "agents": ["Mercury", "Hermes", "Hestia"]
+    },
+    "cecilia": {
+      "url": "http://192.168.4.89:11434",
+      "models": ["qwen2.5:7b", "deepseek-r1:7b", "llama3.2:3b"],
+      "agents": ["CECE"]
+    }
   }
 }

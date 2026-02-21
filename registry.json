@@ -1,8 +1,9 @@
 {
-  "version": "1.1",
+  "version": "2.0",
   "network": "asdfghjkl",
   "subnet": "192.168.4.0/24",
   "updated": "2026-02-21",
+  "source_note": "Merged from devices/registry.json, carpool/registry-export.jsonl, carpool/hw-*.json, carpool/pi-*.json, and nmap discovery.",
   "devices": {
     "meridian": {
       "ip": "192.168.4.1",
@@ -11,7 +12,7 @@
       "vendor": "Xfinity",
       "hardware": "Xfinity Gateway",
       "description": "Gateway router — network edge. All LAN devices connect through this.",
-      "children": ["alexandria", "cecilia", "octavia", "alice", "lucidia", "aria", "pandora", "calliope", "athena", "phantom", "specter", "ember", "wraith", "vesper", "cortana"],
+      "children": ["alexandria", "cecilia", "octavia", "alice", "lucidia", "aria", "cordelia", "pandora", "calliope", "athena", "phantom", "specter", "ember", "wraith", "vesper", "cortana"],
       "status": "online"
     },
     "alexandria": {
@@ -23,8 +24,12 @@
       "os": "macOS Sonoma",
       "role": "command-center",
       "parent": "meridian",
-      "description": "Alexa's primary workstation. Orchestrates all agents, runs Claude Code, manages deployments.",
+      "agent_registry_id": 1,
+      "agent_registry_name": "Alexandria",
+      "agent_registry_role": "founder_ceo",
+      "description": "Alexa's primary workstation. Human orchestrator. Runs Claude Code, manages all deployments, coordinates all agents.",
       "ssh": false,
+      "services": ["claude-code", "development", "pixel-office-bridge"],
       "attached_devices": {
         "siren": {
           "connection": "usb",
@@ -60,7 +65,26 @@
           "serial_baud": 115200,
           "apps": ["dashboard", "weather", "crypto", "browser", "snake", "network", "settings", "portfolio"],
           "capabilities": ["wifi", "touch-input", "serial-control", "midi"],
+          "description": "Gutted WaveQube wave lamp housing a DLP projector system. Projects generative art, audio-reactive visuals, and animated robot onto walls.",
+          "internal_hardware": {
+            "projector": "TI DLP LightCrafter 2000 EVM (DLP2000)",
+            "projector_resolution": "640x360 nHD",
+            "projector_brightness": "20 lumens",
+            "projector_interface": "RGB666 18-bit DPI via GPIO",
+            "compute": "Raspberry Pi Zero 2W (or Pi 4)",
+            "adapter": "MickMake Pi Projector PCB",
+            "power": "5V 3A USB-C (shared rail)",
+            "modes": ["robot", "waves", "audio-reactive", "slideshow", "logo"]
+          },
           "status": "disconnected"
+        },
+        "pixel-office-bridge": {
+          "connection": "service",
+          "bus": "WebSocket",
+          "port": 8765,
+          "description": "WebSocket bridge for pixel office agent coordination",
+          "agent_registry_id": 29,
+          "status": "online"
         }
       },
       "status": "online"
@@ -71,30 +95,32 @@
       "type": "pi",
       "vendor": "Raspberry Pi",
       "hardware": "Pi 5 8GB",
+      "platform": "raspberry_pi_5_hailo8",
       "os": "Debian 13",
       "ssh": "SSH-2.0-OpenSSH_10.0p2 Debian-7",
       "ssh_user": "pi",
       "http": true,
       "role": "primary-ai-agent",
       "parent": "meridian",
-      "description": "Primary AI agent. Runs CECE OS (68 sovereign apps). Hailo-8 accelerator for edge AI inference.",
+      "agent_registry_id": 27,
+      "description": "Primary AI agent host. Runs CECE OS (68 sovereign apps). Hailo-8 accelerator for edge AI inference. Cloudflare tunnel endpoint.",
       "tailscale": "100.72.180.98",
       "services": ["cece-os", "ollama", "cloudflared"],
       "attached_devices": {
-        "hailo8": {
+        "cecilia-hailo8": {
           "connection": "m.2",
-          "bus": "PCIe",
+          "bus": "PCIe via Pi 5 HAT",
           "vendor": "Hailo",
           "hardware": "Hailo-8 AI Accelerator",
           "compute_tops": 26,
-          "description": "26 TOPS neural network accelerator. M.2 key-M form factor via Pi 5 HAT.",
+          "description": "26 TOPS neural network accelerator. M.2 key-M form factor, mounted via Pi 5 M.2 HAT.",
           "status": "online"
         },
         "cecilia-nvme": {
           "connection": "usb",
           "bus": "USB 3.0",
           "hardware": "500GB NVMe SSD",
-          "description": "Primary storage for CECE OS, models, and data.",
+          "description": "Primary storage for CECE OS, AI models, and data.",
           "capacity_gb": 500,
           "status": "online"
         }
@@ -106,17 +132,37 @@
       "mac": "2c:cf:67:cf:fa:17",
       "type": "pi",
       "vendor": "Raspberry Pi",
-      "hardware": "Pi 5",
+      "hardware": "Pi 5 8GB",
+      "platform": "raspberry_pi_5_pironman_hailo8",
       "os": "Debian 12",
       "ssh": "SSH-2.0-OpenSSH_9.2p1 Debian-2+deb12u7",
       "ssh_user": "pi",
       "role": "primary-compute",
       "parent": "meridian",
-      "description": "ML acceleration engineer. Primary compute for inference and batch processing.",
+      "agent_registry_id": 8,
+      "description": "ML acceleration engineer. Primary compute for inference and batch processing. Pironman case with Hailo-8. Runs Mercury, Hermes, Hestia Ollama agents.",
       "tailscale": "100.66.235.47",
       "services": ["ollama", "agent-runtime"],
       "agent_capacity": 22500,
-      "attached_devices": {},
+      "ollama_endpoint": "octavia:11434",
+      "attached_devices": {
+        "octavia-pironman": {
+          "connection": "case",
+          "vendor": "SunFounder",
+          "hardware": "Pironman 5 case",
+          "features": ["active-cooling", "oled-display", "rgb-led", "safe-shutdown", "nvme-slot"],
+          "status": "online"
+        },
+        "octavia-hailo8": {
+          "connection": "m.2",
+          "bus": "PCIe via Pironman M.2 slot or Pi 5 HAT",
+          "vendor": "Hailo",
+          "hardware": "Hailo-8 AI Accelerator",
+          "compute_tops": 26,
+          "description": "Second Hailo-8 in the fleet. Used for model optimization and edge inference.",
+          "status": "online"
+        }
+      },
       "status": "online"
     },
     "alice": {
@@ -124,14 +170,16 @@
       "mac": "d8:3a:dd:ff:98:87",
       "type": "pi",
       "vendor": "Raspberry Pi",
-      "hardware": "Pi 4",
+      "hardware": "Pi 400",
+      "platform": "raspberry_pi_400",
       "os": "Raspbian 11",
       "ssh": "SSH-2.0-OpenSSH_8.4p1 Raspbian-5+deb11u5",
       "ssh_user": "alice",
       "http": true,
-      "role": "worker",
+      "role": "gateway",
       "parent": "meridian",
-      "description": "Agent coordinator. Gateway node, distributed compute, lifecycle management.",
+      "agent_registry_id": 6,
+      "description": "Agent coordinator and gateway node. Pi 400 (keyboard-integrated Pi 4). Agent lifecycle management, coordination protocols, distributed systems.",
       "tailscale": "100.77.210.18",
       "services": ["agent-management", "coordination"],
       "attached_devices": {},
@@ -143,26 +191,29 @@
       "type": "pi",
       "vendor": "Raspberry Pi",
       "hardware": "Pi 5 8GB",
+      "platform": "raspberry_pi_5_electrocookie",
       "role": "ai-inference",
       "parent": "meridian",
-      "description": "AI inference node. Multi-agent orchestration, NLU, anti-hallucination protocols.",
+      "agent_registry_id": 10,
+      "agent_registry_role": "legacy_services",
+      "description": "AI inference node. Multi-agent orchestration, NLU, anti-hallucination protocols. ElectroCookie case.",
       "tailscale": "100.83.149.86",
       "services": ["ollama", "agent-orchestration"],
       "agent_capacity": 7500,
       "attached_devices": {
-        "pironman": {
+        "lucidia-electrocookie": {
           "connection": "case",
-          "vendor": "SunFounder",
-          "hardware": "Pironman 5 case",
-          "description": "All-in-one Pi 5 case with ICE Tower cooler, OLED status display, RGB fan, power button, M.2 NVMe slot.",
-          "features": ["active-cooling", "oled-display", "rgb-led", "safe-shutdown", "nvme-slot"],
-          "status": "online"
+          "vendor": "ElectroCookie",
+          "hardware": "ElectroCookie Pi 5 case",
+          "description": "Snap-together acrylic case with passive cooling and M.2 NVMe expansion.",
+          "features": ["passive-cooling", "nvme-slot", "gpio-access"],
+          "status": "offline"
         },
         "lucidia-nvme": {
           "connection": "m.2",
-          "bus": "PCIe via Pironman",
+          "bus": "PCIe via ElectroCookie",
           "hardware": "1TB NVMe SSD",
-          "description": "Primary storage. Mounted through Pironman's built-in M.2 slot.",
+          "description": "Primary storage. Mounted through case's built-in M.2 slot.",
           "capacity_gb": 1000,
           "status": "offline"
         }
@@ -174,12 +225,57 @@
       "mac": null,
       "type": "pi",
       "vendor": "Raspberry Pi",
-      "hardware": "Pi 5",
-      "role": "harmony",
+      "hardware": "Pi 5 8GB",
+      "platform": "raspberry_pi_5_pironman_hailo8",
+      "role": "api-services",
       "parent": "meridian",
-      "description": "Data science lead. ML pipelines, research coordination, API services.",
+      "agent_registry_id": 7,
+      "description": "Data science lead and API services. Pironman case with Hailo-8 accelerator. ML pipelines, research coordination.",
       "tailscale": "100.109.14.17",
-      "services": ["ml-pipelines", "data-analysis"],
+      "services": ["ml-pipelines", "data-analysis", "api-services"],
+      "attached_devices": {
+        "aria-pironman": {
+          "connection": "case",
+          "vendor": "SunFounder",
+          "hardware": "Pironman 5 case",
+          "features": ["active-cooling", "oled-display", "rgb-led", "safe-shutdown", "nvme-slot"],
+          "status": "offline"
+        },
+        "aria-hailo8": {
+          "connection": "m.2",
+          "bus": "PCIe via Pironman M.2 slot or Pi 5 HAT",
+          "vendor": "Hailo",
+          "hardware": "Hailo-8 AI Accelerator",
+          "compute_tops": 26,
+          "description": "Third Hailo-8 in the fleet. Used for ML pipeline acceleration.",
+          "status": "offline"
+        }
+      },
+      "status": "offline"
+    },
+    "cordelia": {
+      "ip": "192.168.4.27",
+      "mac": null,
+      "type": "pi",
+      "vendor": "Raspberry Pi",
+      "hardware": "Pi 5",
+      "platform": "raspberry_pi_5",
+      "role": "orchestration",
+      "parent": "meridian",
+      "agent_registry_id": 20,
+      "description": "Orchestration node. Shares IP .27 with athena (possibly DHCP overlap or swapped). Pi 5, standalone.",
+      "note": "IP .27 also seen as athena (iPhone/iPad) in nmap scans. May be intermittent — Cordelia may take this IP when athena is off-network.",
+      "attached_devices": {},
+      "status": "active"
+    },
+    "olympia": {
+      "type": "kvm",
+      "vendor": "PiKVM",
+      "hardware": "PiKVM",
+      "platform": "pikvm",
+      "role": "kvm-console",
+      "agent_registry_id": 9,
+      "description": "Remote KVM (keyboard-video-mouse) console. Allows remote BIOS-level access to other machines. Currently offline/undeployed.",
       "attached_devices": {},
       "status": "offline"
     },
@@ -189,7 +285,9 @@
       "vendor": "DigitalOcean",
       "hardware": "Droplet",
       "role": "edge-compute",
-      "description": "Edge compute droplet. Shellfish agent host.",
+      "agent_registry_id": 12,
+      "agent_registry_name": "Shellfish",
+      "description": "Edge compute droplet. Shellfish agent host. Cloud infrastructure node.",
       "tailscale": "100.94.33.37",
       "services": ["edge-compute", "agent-runtime"],
       "status": "online"
@@ -200,9 +298,11 @@
       "vendor": "DigitalOcean",
       "hardware": "Droplet",
       "role": "cloud-oracle",
-      "description": "Cloud oracle. WebSocket endpoint, mining fleet, public API.",
+      "agent_registry_id": 13,
+      "agent_registry_name": "Codex-Infinity",
+      "description": "Cloud oracle. Codex server, WebSocket endpoint, mining fleet, public API.",
       "tailscale": "100.108.132.8",
-      "services": ["websocket", "api", "mining"],
+      "services": ["websocket", "api", "mining", "codex"],
       "status": "online"
     },
     "pandora": {
@@ -218,7 +318,9 @@
       "attached_devices": {
         "calliope": {
           "connection": "hdmi",
-          "description": "Roku Streaming Stick plugged into HDMI port. Has its own network IP (.33) but physically attached to pandora."
+          "hardware": "Roku Streaming Stick Plus 3830R",
+          "ip": "192.168.4.33",
+          "description": "Roku Stick plugged into HDMI port. Has its own network IP (.33) but physically attached to pandora."
         }
       },
       "status": "online"
@@ -232,7 +334,10 @@
       "friendly_name": "Roku Stick",
       "api": "http://192.168.4.33:8060",
       "location": "Bedroom",
-      "parent": "meridian",
+      "parent": "pandora",
+      "physical_parent": "pandora",
+      "network_parent": "meridian",
+      "note": "Physically plugged into pandora (HDMI) but has its own WiFi connection to the router.",
       "status": "online"
     },
     "athena": {
@@ -244,6 +349,7 @@
       "ports": [7000, 62078],
       "services": ["airplay", "lockdownd"],
       "parent": "meridian",
+      "note": "Shares .27 with cordelia (Pi 5). Likely DHCP — one displaces the other.",
       "status": "online"
     },
     "phantom": {
@@ -269,7 +375,9 @@
       "mac": "30:be:29:5b:24:5f",
       "type": "iot",
       "vendor": "AltoBeam",
-      "description": "Smart home IoT device",
+      "agent_registry_id": 30,
+      "agent_registry_name": "IoT-Device-22",
+      "description": "Unidentified smart home IoT device. AltoBeam chipset.",
       "parent": "meridian",
       "status": "online"
     },
@@ -278,7 +386,9 @@
       "mac": "98:17:3c:38:db:78",
       "type": "unknown",
       "vendor": "Private",
-      "description": "Silent device, no open ports",
+      "agent_registry_id": 31,
+      "agent_registry_name": "IoT-Device-44",
+      "description": "Unidentified device. Silent, no open ports. Tagged as IoT in agent registry.",
       "parent": "meridian",
       "status": "online"
     },
@@ -287,7 +397,7 @@
       "mac": "d0:c9:07:50:51:ca",
       "type": "unknown",
       "vendor": "Private",
-      "description": "Silent device, no open ports",
+      "description": "Silent device, no open ports.",
       "parent": "meridian",
       "status": "online"
     },
@@ -297,55 +407,75 @@
       "type": "console",
       "vendor": "Microsoft",
       "hardware": "Xbox or Surface",
-      "description": "Xbox or Surface device",
+      "description": "Xbox or Surface device.",
       "parent": "meridian",
       "status": "sleeping"
     }
   },
   "device_tree": {
     "_comment": "Physical device hierarchy. Every device-connected-to-device relationship.",
-    "meridian (router)": {
-      "alexandria (Mac M1)": {
-        "siren (USB: RISC-V)": {},
-        "lyra (USB: MIDI)": {},
-        "wavecube (USB: ESP32)": {}
+    "meridian (router, .1)": {
+      "alexandria (Mac M1, .28)": {
+        "siren (USB: Sipeed BL808 RISC-V)": {},
+        "lyra (USB: Kalezo MIDI)": {},
+        "wavecube (USB: ESP32 + DLP2000 projector)": {
+          "dlp2000 (GPIO/DPI: TI DLP LightCrafter projector, 640x360)": {},
+          "pi-zero-2w (GPIO: Raspberry Pi Zero 2W, inside wavecube shell)": {}
+        },
+        "pixel-office-bridge (WebSocket :8765)": {}
       },
-      "cecilia (Pi 5)": {
-        "hailo8 (PCIe: AI accelerator, 26 TOPS)": {},
-        "cecilia-nvme (USB: 500GB NVMe)": {}
+      "cecilia (Pi 5, .89)": {
+        "cecilia-hailo8 (PCIe/M.2: Hailo-8, 26 TOPS)": {},
+        "cecilia-nvme (USB 3.0: 500GB NVMe)": {}
       },
-      "octavia (Pi 5)": {},
-      "alice (Pi 4)": {},
-      "lucidia (Pi 5)": {
-        "pironman (case: cooler + OLED + NVMe slot)": {
+      "octavia (Pi 5 + Pironman + Hailo-8, .38)": {
+        "octavia-pironman (case: SunFounder Pironman 5)": {},
+        "octavia-hailo8 (PCIe/M.2: Hailo-8, 26 TOPS)": {}
+      },
+      "alice (Pi 400, .49)": {},
+      "lucidia (Pi 5 + ElectroCookie, .81)": {
+        "lucidia-electrocookie (case: ElectroCookie + NVMe slot)": {
           "lucidia-nvme (M.2: 1TB NVMe)": {}
         }
       },
-      "aria (Pi 5)": {},
-      "pandora (Roku TV)": {
-        "calliope (HDMI: Roku Stick)": {}
+      "aria (Pi 5 + Pironman + Hailo-8, .82)": {
+        "aria-pironman (case: SunFounder Pironman 5)": {},
+        "aria-hailo8 (PCIe/M.2: Hailo-8, 26 TOPS)": {}
       },
-      "athena (mobile)": {},
-      "phantom (mobile)": {},
-      "specter (mobile)": {},
-      "ember (IoT)": {},
-      "wraith (unknown)": {},
-      "vesper (unknown)": {},
-      "cortana (console)": {}
+      "cordelia (Pi 5, .27)": {},
+      "pandora (65\" Roku TV, .26)": {
+        "calliope (HDMI: Roku Stick Plus, has own IP .33)": {}
+      },
+      "athena (iPhone/iPad, .27)": {},
+      "phantom (mobile, .88)": {},
+      "specter (mobile, .92)": {},
+      "ember (IoT, .22)": {},
+      "wraith (unknown, .44)": {},
+      "vesper (unknown, .45)": {},
+      "cortana (Xbox/Surface, .90)": {}
     },
     "cloud (DigitalOcean)": {
-      "anastasia (Droplet)": {},
-      "gematria (Droplet)": {}
+      "anastasia (Droplet, 174.138.44.45)": {},
+      "gematria (Droplet, 159.65.43.12)": {}
+    },
+    "offline/undeployed": {
+      "olympia (PiKVM, no IP assigned)": {}
     }
   },
   "totals": {
-    "all_named": 22,
-    "lan_networked": 15,
-    "sub_devices": 6,
+    "top_level_devices": 21,
+    "sub_devices": 14,
+    "total_named": 35,
+    "lan_networked": 16,
     "cloud": 2,
-    "online": 15,
-    "offline": 2,
+    "usb_peripherals": 4,
+    "cases_enclosures": 3,
+    "accelerators_hailo8": 3,
+    "nvme_drives": 3,
+    "online": 16,
+    "offline": 3,
     "disconnected": 1,
-    "sleeping": 1
+    "sleeping": 1,
+    "total_compute_tops": 78
   }
 }

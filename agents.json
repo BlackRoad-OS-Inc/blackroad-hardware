@@ -1,5 +1,5 @@
 {
-  "version": "1.0",
+  "version": "2.0",
   "updated": "2026-02-21",
   "total_agent_capacity": 30000,
   "device_agents": {
@@ -7,84 +7,161 @@
       "ip": "192.168.4.89",
       "named_agents": ["CECE"],
       "role": "primary-ai-agent",
+      "platform": "raspberry_pi_5_hailo8",
       "ollama_models": ["qwen2.5:7b", "deepseek-r1:7b", "llama3.2:3b"],
       "services": ["cece-os", "ollama", "cloudflared"],
-      "specialization": "CECE OS — 68 sovereign apps, Hailo-8 edge AI",
+      "specialization": "CECE OS — 68 sovereign apps, Hailo-8 edge AI, Cloudflare tunnel endpoint",
       "compute_tops": 26
     },
     "octavia": {
       "ip": "192.168.4.38",
-      "named_agents": ["OCTAVIA"],
+      "named_agents": ["OCTAVIA", "Mercury", "Hermes", "Hestia"],
       "role": "primary-compute",
-      "ollama_models": ["qwen2.5:7b", "mistral:7b"],
+      "platform": "raspberry_pi_5_pironman_hailo8",
+      "ollama_models": ["qwen2.5-coder:32b", "deepseek-coder:6.7b", "mistral:7b", "qwen2.5:7b"],
+      "ollama_endpoint": "octavia:11434",
       "services": ["ollama", "agent-runtime"],
-      "specialization": "ML acceleration, model optimization, batch inference",
+      "specialization": "ML acceleration, model optimization, batch inference. Runs mythology agents (Mercury, Hermes, Hestia).",
+      "compute_tops": 26,
       "agent_capacity": 22500
     },
     "alice": {
       "ip": "192.168.4.49",
       "named_agents": ["ALICE"],
-      "role": "worker",
+      "role": "gateway",
+      "platform": "raspberry_pi_400",
       "services": ["agent-management", "coordination"],
-      "specialization": "Agent lifecycle, coordination protocols, distributed systems"
+      "specialization": "Agent lifecycle, coordination protocols, distributed systems. Pi 400 keyboard-integrated form factor."
     },
     "lucidia": {
       "ip": "192.168.4.81",
       "named_agents": ["LUCIDIA"],
       "role": "ai-inference",
+      "platform": "raspberry_pi_5_electrocookie",
       "ollama_models": ["qwen2.5:7b"],
       "services": ["ollama", "agent-orchestration"],
-      "specialization": "Multi-agent orchestration, NLU, anti-hallucination",
+      "specialization": "Multi-agent orchestration, NLU, anti-hallucination. ElectroCookie case + 1TB NVMe.",
       "agent_capacity": 7500
     },
     "aria": {
       "ip": "192.168.4.82",
       "named_agents": ["ARIA"],
-      "role": "harmony",
-      "services": ["ml-pipelines", "data-analysis"],
-      "specialization": "ML pipelines, data science, research coordination"
+      "role": "api-services",
+      "platform": "raspberry_pi_5_pironman_hailo8",
+      "services": ["ml-pipelines", "data-analysis", "api-services"],
+      "specialization": "Data science, ML pipelines, research coordination. Pironman case + Hailo-8.",
+      "compute_tops": 26
+    },
+    "cordelia": {
+      "ip": "192.168.4.27",
+      "named_agents": ["CORDELIA"],
+      "role": "orchestration",
+      "platform": "raspberry_pi_5",
+      "services": ["orchestration"],
+      "specialization": "Orchestration node."
     },
     "anastasia": {
       "ip": "174.138.44.45",
       "named_agents": ["SHELLFISH"],
       "role": "edge-compute",
+      "platform": "digitalocean",
       "services": ["edge-compute", "agent-runtime"],
-      "specialization": "Edge compute, failover, public-facing services"
+      "specialization": "Edge compute, failover, cloud infrastructure"
     },
     "gematria": {
       "ip": "159.65.43.12",
-      "named_agents": [],
+      "named_agents": ["CODEX-INFINITY"],
       "role": "cloud-oracle",
-      "services": ["websocket", "api", "mining"],
-      "specialization": "WebSocket mesh, mining fleet, public API endpoint"
+      "platform": "digitalocean",
+      "services": ["websocket", "api", "mining", "codex"],
+      "specialization": "Codex server, WebSocket mesh, mining fleet, public API endpoint"
     },
     "alexandria": {
       "ip": "192.168.4.28",
       "named_agents": [],
       "role": "command-center",
-      "services": ["claude-code", "development", "orchestration"],
-      "specialization": "Human orchestrator workstation. Runs Claude Code sessions."
+      "platform": "mac-m1",
+      "services": ["claude-code", "development", "pixel-office-bridge"],
+      "specialization": "Human orchestrator (Alexa). Runs Claude Code sessions, USB peripherals, pixel office bridge."
     }
   },
   "core_agents": {
-    "LUCIDIA":  { "device": "lucidia",    "role": "Coordinator",  "symbol": "🔴", "type": "core" },
-    "ALICE":    { "device": "alice",      "role": "Router",       "symbol": "🔵", "type": "core" },
-    "OCTAVIA":  { "device": "octavia",    "role": "Compute",      "symbol": "🟢", "type": "core" },
-    "PRISM":    { "device": null,         "role": "Analyst",      "symbol": "🟡", "type": "core" },
-    "ECHO":     { "device": null,         "role": "Memory",       "symbol": "🟣", "type": "core" },
-    "CIPHER":   { "device": null,         "role": "Security",     "symbol": "⚫", "type": "core" },
-    "CECE":     { "device": "cecilia",    "role": "Soul",         "symbol": "💜", "type": "core" }
+    "LUCIDIA":  { "device": "lucidia",  "role": "Coordinator",  "symbol": "🔴", "type": "core", "archetype": "Creative" },
+    "ALICE":    { "device": "alice",    "role": "Router",       "symbol": "🔵", "type": "core", "archetype": "Supportive" },
+    "OCTAVIA":  { "device": "octavia",  "role": "Compute",      "symbol": "🟢", "type": "core", "archetype": "Multitasker" },
+    "PRISM":    { "device": null,       "role": "Analyst",      "symbol": "🟡", "type": "core" },
+    "ECHO":     { "device": null,       "role": "Memory",       "symbol": "🟣", "type": "core" },
+    "CIPHER":   { "device": null,       "role": "Security",     "symbol": "⚫", "type": "core" },
+    "CECE":     { "device": "cecilia",  "role": "Soul",         "symbol": "💜", "type": "core", "archetype": "Analytical", "platform": "claude-custom" }
   },
   "mythology_agents": {
-    "Mercury":  { "model": "qwen2.5-coder:32b", "role": "Revenue",        "type": "ollama" },
-    "Hermes":   { "model": "deepseek-coder:6.7b","role": "Deployment",     "type": "ollama" },
-    "Hestia":   { "model": "mistral:7b",         "role": "Payments",       "type": "ollama" },
-    "Roadie":   { "model": "ollama",              "role": "Infrastructure", "type": "ollama" }
+    "Mercury": {
+      "model": "qwen2.5-coder:32b",
+      "device": "octavia",
+      "endpoint": "octavia:11434",
+      "role": "Revenue specialist",
+      "mission": "first-customer-feb21",
+      "symbol": "☿️",
+      "type": "ollama",
+      "agent_registry_id": 17
+    },
+    "Hermes": {
+      "model": "deepseek-coder:6.7b",
+      "device": "octavia",
+      "endpoint": "octavia:11434",
+      "role": "Deployment specialist",
+      "symbol": "🪽",
+      "type": "ollama",
+      "agent_registry_id": 18
+    },
+    "Hestia": {
+      "model": "mistral:7b",
+      "device": "octavia",
+      "endpoint": "octavia:11434",
+      "role": "Payments specialist",
+      "symbol": "🏠",
+      "type": "ollama",
+      "agent_registry_id": 19
+    },
+    "Roadie": {
+      "model": "ollama",
+      "device": null,
+      "role": "Infrastructure assistant",
+      "symbol": "🛣️",
+      "type": "ollama",
+      "agent_registry_id": 21
+    }
+  },
+  "specialist_agents": {
+    "Holo":  { "platform": "ollama", "role": "Visualization specialist", "agent_registry_id": 22, "type": "ollama" },
+    "Oloh":  { "platform": "ollama", "role": "Reasoning engine",         "agent_registry_id": 23, "type": "ollama" },
+    "Caddy": { "platform": "ollama", "role": "Web server specialist",    "agent_registry_id": 24, "type": "ollama" },
+    "Eve":   { "platform": "ollama", "role": "Security specialist",      "agent_registry_id": 26, "type": "ollama" }
   },
   "cloud_ai_agents": {
-    "Cadence":  { "platform": "ChatGPT",  "role": "Creative",  "type": "cloud-ai" },
-    "Silas":    { "platform": "Grok",      "role": "Analyst",   "type": "cloud-ai" },
-    "Gematria": { "platform": "Gemini",    "role": "Research",  "type": "cloud-ai" }
+    "Cadence":  { "platform": "ChatGPT", "role": "Creative",  "symbol": "🎵", "type": "cloud-ai", "agent_registry_id": 3 },
+    "Silas":    { "platform": "Grok",     "role": "Analyst",   "symbol": "📊", "type": "cloud-ai", "agent_registry_id": 4 },
+    "Gematria": { "platform": "Gemini",   "role": "Research",  "symbol": "🔢", "type": "cloud-ai", "agent_registry_id": 5 }
+  },
+  "routing_table": {
+    "_comment": "Primary and fallback agent routing for task types (from carpool/ROUTES.md)",
+    "philosophy":  { "primary": "LUCIDIA",  "fallback": "CECE" },
+    "routing":     { "primary": "ALICE",    "fallback": "CIPHER",   "escalation": "LUCIDIA" },
+    "compute":     { "primary": "OCTAVIA",  "fallback": "Mercury",  "escalation": "Hermes" },
+    "analysis":    { "primary": "PRISM",    "fallback": "Silas",    "escalation": "Gematria" },
+    "memory":      { "primary": "ECHO",     "fallback": "CECE",     "escalation": "LUCIDIA" },
+    "security":    { "primary": "CIPHER",   "fallback": "ALICE",    "escalation": "LUCIDIA" },
+    "creative":    { "primary": "CECE",     "fallback": "Cadence",  "escalation": "LUCIDIA" },
+    "revenue":     { "primary": "Mercury",  "fallback": "Hestia",   "escalation": "LUCIDIA" },
+    "deploy":      { "primary": "Hermes",   "fallback": "ALICE",    "escalation": "OCTAVIA" },
+    "payments":    { "primary": "Hestia",   "fallback": "Mercury",  "escalation": "CIPHER" }
+  },
+  "hardware_routing": {
+    "_comment": "Task-to-device routing for hardware-bound operations",
+    "ai_inference":   { "primary": "octavia",  "fallback": "cecilia" },
+    "api_services":   { "primary": "aria",     "fallback": "alice" },
+    "orchestration":  { "primary": "cordelia", "fallback": "lucidia" },
+    "gateway":        { "primary": "alice",    "fallback": "aria" }
   },
   "capacity_distribution": {
     "ai_research":    12592,

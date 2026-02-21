@@ -27,10 +27,10 @@ check_host() {
     TOTAL=$((TOTAL + 1))
 
     if ping -c 1 -W 2 "$ip" > /dev/null 2>&1; then
-        echo -e "  ${GREEN}●${NC} %-14s %-18s %s" "$name" "$ip" "$role"
+        printf "  ${GREEN}●${NC} %-14s %-18s %s\n" "$name" "$ip" "$role"
         ONLINE=$((ONLINE + 1))
     else
-        echo -e "  ${RED}○${NC} %-14s %-18s %s" "$name" "$ip" "$role"
+        printf "  ${RED}○${NC} %-14s %-18s %s\n" "$name" "$ip" "$role"
         OFFLINE=$((OFFLINE + 1))
     fi
 }
@@ -40,25 +40,34 @@ echo ""
 check_host "meridian"    "192.168.4.1"   "Router"
 check_host "ember"       "192.168.4.22"  "IoT"
 check_host "pandora"     "192.168.4.26"  "TV"
-check_host "athena"      "192.168.4.27"  "Mobile"
-check_host "alexandria"  "192.168.4.28"  "Command Center"
-check_host "calliope"    "192.168.4.33"  "Streaming"
-check_host "octavia"     "192.168.4.38"  "Primary Compute"
-check_host "wraith"      "192.168.4.44"  "Unknown"
-check_host "vesper"      "192.168.4.45"  "Unknown"
-check_host "alice"       "192.168.4.49"  "Worker"
-check_host "lucidia"     "192.168.4.81"  "AI Inference"
-check_host "aria"        "192.168.4.82"  "Harmony"
-check_host "phantom"     "192.168.4.88"  "Mobile"
-check_host "cecilia"     "192.168.4.89"  "Primary AI Agent"
-check_host "cortana"     "192.168.4.90"  "Console"
-check_host "specter"     "192.168.4.92"  "Mobile"
+check_host "cordelia"    "192.168.4.27"  "Orchestration (Pi 5)"
+check_host "alexandria"  "192.168.4.28"  "Command Center (Mac M1)"
+check_host "calliope"    "192.168.4.33"  "Streaming (Roku Stick)"
+check_host "octavia"     "192.168.4.38"  "Primary Compute (Pi 5+Pironman+H8)"
+check_host "wraith"      "192.168.4.44"  "Unknown (silent)"
+check_host "vesper"      "192.168.4.45"  "Unknown (silent)"
+check_host "alice"       "192.168.4.49"  "Gateway (Pi 400)"
+check_host "lucidia"     "192.168.4.81"  "AI Inference (Pi 5+ElectroCookie)"
+check_host "aria"        "192.168.4.82"  "API Services (Pi 5+Pironman+H8)"
+check_host "phantom"     "192.168.4.88"  "Mobile (privacy MAC)"
+check_host "cecilia"     "192.168.4.89"  "Primary AI / CECE OS (Pi 5+H8)"
+check_host "cortana"     "192.168.4.90"  "Console (Xbox/Surface)"
+check_host "specter"     "192.168.4.92"  "Mobile (privacy MAC)"
 
 echo ""
-echo -e "${CYAN}Cloud Nodes${NC}"
+echo -e "${CYAN}Cloud Nodes (DigitalOcean)${NC}"
 echo ""
-check_host "anastasia"   "174.138.44.45" "Edge Compute (DO)"
-check_host "gematria"    "159.65.43.12"  "Cloud Oracle (DO)"
+check_host "anastasia"   "174.138.44.45" "Edge Compute / Shellfish"
+check_host "gematria"    "159.65.43.12"  "Cloud Oracle / Codex-Infinity"
+
+echo ""
+echo -e "${CYAN}Tailscale Mesh${NC}"
+echo ""
+check_host "cecilia-ts"  "100.72.180.98"  "cecilia via Tailscale"
+check_host "octavia-ts"  "100.66.235.47"  "octavia via Tailscale"
+check_host "alice-ts"    "100.77.210.18"  "alice via Tailscale"
+check_host "lucidia-ts"  "100.83.149.86"  "lucidia via Tailscale"
+check_host "aria-ts"     "100.109.14.17"  "aria via Tailscale"
 
 echo ""
 echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
