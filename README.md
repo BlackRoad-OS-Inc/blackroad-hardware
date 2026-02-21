@@ -533,11 +533,173 @@ MIDI intelligence system capturing Aerband wireless drumstick events for ML patt
 
 ---
 
+## MQTT Message Bus
+
+The Pi fleet runs **Mosquitto MQTT** as the inter-service message bus.
+
+| Endpoint | Purpose |
+|----------|---------|
+| `localhost:1883` | Local broker on each Pi |
+| `mqtt.blackroad.io:1883` | External endpoint for off-device access |
+
+### Topic Tree
+
+| Topic | Source | Effect |
+|-------|--------|--------|
+| `system/heartbeat/#` | Agents | Green pulse on LEDs |
+| `system/hologram/text` | Any | Rainbow LEDs + hologram display |
+| `system/panel/status` | Agents | Solid color status (ok/warn/err) |
+| `agent/output` | Agents | Blue flash + scroll display |
+| `lights/pattern` | External | Custom LED pattern (JSON payload) |
+| `screen/command` | External | Clear screen, mode switch |
+
+**Pi-ops dashboard**: FastAPI + SQLite ring buffer (max 1000 messages), SSE at `/events`, publish at `/api/publish`.
+
+---
+
+## GPIO Pin Mappings
+
+### NeoPixel LED Strip
+```
+Data   → GPIO 18 (physical pin 12)
+Power  → 5V (pin 2), external PSU for long strips
+Ground → GND (pin 6)
+Default: 8 pixels (Blinkt! compat), up to 60+ with external power
+```
+
+### Blinkt! HAT
+8-pixel SPI LED HAT — uses own SPI header, no manual pin assignment.
+
+**LED backend detection order:** `blinkt` → `neopixel` → `mock` (console emoji fallback).
+
+### WaveQube DPI Projector
+RGB666 18-bit via GPIO. Boot overlay: `dtoverlay=dpi18`, 640x360 @ 60Hz, `gpu_mem=64`.
+
+---
+
+## Docker Deployment Fleet (20 Domains)
+
+20 domain containers running via `blackroad-os-deploy`. Docker images built locally, SCP'd to Pis, auto-run with `--restart unless-stopped`.
+
+| Domain | Port | Domain | Port |
+|--------|------|--------|------|
+| api.blackroad.io | 3001 | studio.blackroad.io | 3011 |
+| demo.blackroad.io | 3002 | brand.blackroad.io | 3012 |
+| home.blackroad.io | 3003 | earth.blackroad.io | 3013 |
+| creator-studio.blackroad.io | 3004 | blackroadqi.com | 3020 |
+| devops.blackroad.io | 3005 | blackroadquantum.info | 3021 |
+| education.blackroad.io | 3006 | blackroadquantum.net | 3022 |
+| finance.blackroad.io | 3007 | blackroadquantum.shop | 3023 |
+| ideas.blackroad.io | 3008 | blackroadquantum.store | 3024 |
+| legal.blackroad.io | 3009 | roadcoin.io | 3030 |
+| research-lab.blackroad.io | 3010 | roadchain.io | 3031 |
+
+**Deploy stack:** Postgres 16 + Node.js Deployment API (:3000) + Caddy (:8080)
+
+**Webhook auto-deploy:** GitHub push → port 9000 → `X-Hub-Signature-256` HMAC → rebuild + restart.
+
+**Supported runtimes:** Python 3.11, Node.js 20, Go 1.21, Java, Rust, C#.
+
+---
+
+## Cloudflare Tunnels (2)
+
+| Tunnel | ID | Running On | Routes |
+|--------|----|------------|--------|
+| **blackroad** | `52915859...` | cecilia | `agent.blackroad.ai` → :8080, `api.blackroad.ai` → :3000 |
+| **blackroad-deploy** | `72f1d60c...` | gematria / alice | `deploy-api.blackroad.systems` → :3000, `*.blackroad.systems` → :8080 |
+
+---
+
+## RoadChain Pipeline (XMR → BTC → ROAD)
+
+```
+Pi Fleet (XMR mining) → Exchange (XMR→BTC) → Reserve (BTC) → Mint (ROAD)
+```
+
+### Exchange Backends
+
+| Backend | API | KYC |
+|---------|-----|-----|
+| ChangeNow | `api.changenow.io/v2/` | None (small amounts) |
+| TradeOgre | `tradeogre.com/api/v1/` | None |
+| CoinGecko | `api.coingecko.com/api/v3/` | Rates only |
+
+**Mint ratio:** 1 BTC = 1 ROAD. **ROAD valuation:** $100,000 USD. **BTC balance:** `mempool.space` API.
+
+**Compliance:** CTR threshold $10K, SAR threshold $5K, 24h structuring window, SHA-256 hash-chained audit log.
+
+**ROAD wallet format:** `ROAD<40-char hex>`. Named wallets: alexa, lucidia, octavia, cecilia, aria, alice.
+
+---
+
+## Pi Agent Security Hardening
+
+```ini
+NoNewPrivileges=true    ProtectSystem=strict    ProtectHome=read-only
+PrivateTmp=true         MemoryMax=256M          CPUQuota=50%
+```
+
+**Blocked commands:** `rm -rf /`, `mkfs`, `dd if=`, `shutdown`, `reboot`, `init 0`
+
+**Supported remote tasks:** shell, script, python, file_read, file_write, service (systemctl)
+
+**Agent ID:** from Pi CPU serial (`/proc/cpuinfo` last 8 hex) → `pi-<serial>`
+
+**WebSocket:** `ws://operator.blackroad.local:8080/ws/agent` (ping 30s, timeout 10s)
+
+---
+
+## Storage Layouts
+
+### Cecilia (AI Models)
+```
+~/models/apple/openelm/   — OpenELM weights (3B, 1.1B)
+~/models/apple/fastvlm/   — FastVLM vision-language
+~/models/apple/gguf/      — GGUF quantized for Ollama
+~/datasets/apple/gsm-symbolic/  — 12.5K math samples
+```
+
+### Pi Agent Install
+```
+/opt/blackroad/pi-agent/          — installation root + venv
+/etc/blackroad/pi-agent.config.json — config (heartbeat 15s, metrics 60s)
+/etc/blackroad/agent.env          — secrets (loaded by systemd)
+/var/log/blackroad/               — logs
+```
+
+### RoadChain
+```
+~/.roadchain/mining/     — hashrate.log, earnings.json
+~/.roadchain/exchange/   — swaps.json, rates.json
+~/.roadchain/mint/       — reserve.json, mint-log.json
+~/.roadchain/compliance/ — audit_log.jsonl (hash-chained)
+~/.roadchain/wallets/    — per-agent JSON wallets
+```
+
+---
+
+## Autonomous GitHub Workflows (7)
+
+| Workflow | Schedule | Purpose |
+|----------|----------|---------|
+| **Orchestrator** | Every 4 hours | Master coordinator — push, PR, issues |
+| **Self-Healer** | Every 6 hours | Auto-fix CI failures (tests, build, lint, deps, security) |
+| **Cross-Repo** | On trigger | Cross-repo synchronization |
+| **Dependency Manager** | On trigger | Dependency updates |
+| **Issue Manager** | On trigger | Issue triage and labeling |
+| **Check Dependencies** | On trigger | Dependency verification |
+| **Index Sync** | On trigger | Workflow index synchronization |
+
+**Agent API:** `https://blackroad-agents.blackroad.workers.dev`
+
+---
+
 ## File Index
 
 | File | Description |
 |------|-------------|
-| `registry.json` | Master device registry (21 hosts + 14 sub-devices, v2.3) |
+| `registry.json` | Master device registry (21 hosts + 14 sub-devices, v2.4) |
 | `network.json` | Network topology, Tailscale mesh, tunnel config, Ollama endpoints |
 | `agents.json` | Agent-to-device mapping, routing, AI models, peripherals, protocols, identity |
 | `docs/TOPOLOGY.md` | Visual network diagrams and subnet map |

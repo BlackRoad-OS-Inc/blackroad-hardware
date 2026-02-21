@@ -1,5 +1,5 @@
 {
-  "version": "2.3",
+  "version": "2.4",
   "updated": "2026-02-21",
   "total_agent_capacity": 30000,
   "device_agents": {
@@ -279,5 +279,28 @@
     "CIPHER-ALICE": { "strength": 82, "nature": "Mutual respect" },
     "PRISM-ECHO": { "strength": 75, "nature": "Data exchange" },
     "LUCIDIA-CIPHER": { "strength": 65, "nature": "Philosophical tension" }
+  },
+  "mqtt_agent_channels": {
+    "_comment": "MQTT topics used by agents for inter-service communication via Mosquitto.",
+    "heartbeat": "system/heartbeat/# → green LED pulse",
+    "hologram": "system/hologram/text → rainbow LEDs + hologram",
+    "status": "system/panel/status → solid color (ok/warn/err)",
+    "agent_output": "agent/output → blue flash + scroll",
+    "lights": "lights/pattern → custom LED pattern (JSON)",
+    "screen": "screen/command → clear, mode switch"
+  },
+  "autonomous_fleet_ops": {
+    "_comment": "GitHub Actions autonomous workflows — self-healing, cross-repo sync, dependency management.",
+    "orchestrator_schedule": "every 4 hours",
+    "self_healer_schedule": "every 6 hours",
+    "agent_api": "https://blackroad-agents.blackroad.workers.dev",
+    "workflows": ["orchestrator", "self-healer", "cross-repo", "dependency-manager", "issue-manager", "check-dependencies", "index-sync"]
+  },
+  "deployment_fleet": {
+    "_comment": "20 domain containers deployed via Docker on Pis. Webhook auto-deploy on GitHub push.",
+    "total_domains": 20,
+    "port_range": "3001-3031",
+    "deploy_tunnel": "blackroad-deploy (72f1d60c)",
+    "webhook_port": 9000
   }
 }

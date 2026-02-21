@@ -1,5 +1,5 @@
 {
-  "version": "2.3",
+  "version": "2.4",
   "network": "asdfghjkl",
   "subnet": "192.168.4.0/24",
   "updated": "2026-02-21",
@@ -899,6 +899,205 @@
       "CECE":    { "REASON": 4, "ROUTE": 3, "COMPUTE": 3, "ANALYZE": 3, "MEMORY": 4, "SECURITY": 3, "CREATIVE": 5, "SOUL": 5 }
     }
   },
+  "mqtt_infrastructure": {
+    "_comment": "Mosquitto MQTT broker on Pi fleet — inter-service message bus.",
+    "broker": "Mosquitto",
+    "local_endpoint": "localhost:1883",
+    "external_endpoint": "mqtt.blackroad.io:1883",
+    "topic_tree": {
+      "system/heartbeat/#": { "source": "Agents", "consumer": "LED bridge, Pi-ops", "effect": "Green pulse on LEDs" },
+      "system/hologram/text": { "source": "Any", "consumer": "LED bridge, screen renderer", "effect": "Rainbow LEDs + hologram display" },
+      "system/panel/status": { "source": "Agents", "consumer": "LED bridge, screen renderer", "effect": "Solid color status (ok/warn/err)" },
+      "agent/output": { "source": "Agents", "consumer": "LED bridge, screen, Pi-ops", "effect": "Blue flash + scroll display" },
+      "lights/pattern": { "source": "External", "consumer": "LED bridge", "effect": "Custom LED pattern (JSON)" },
+      "screen/command": { "source": "External", "consumer": "Screen renderer", "effect": "Clear, mode switch" }
+    },
+    "pi_ops_dashboard": {
+      "backend": "FastAPI",
+      "database": "SQLite ring buffer (ops.db, max 1000 messages)",
+      "endpoints": ["/events (SSE)", "/api/messages", "/api/stats", "/api/publish"]
+    }
+  },
+  "gpio_pin_mappings": {
+    "_comment": "GPIO usage beyond Hailo-8 accelerators.",
+    "neopixel_led_strip": {
+      "data_pin": "GPIO 18 (physical pin 12)",
+      "power": "5V (pin 2), external PSU for long strips",
+      "ground": "GND (pin 6)",
+      "default_pixels": 8,
+      "max_pixels": "60+ with external power",
+      "library": "neopixel (board.D18)"
+    },
+    "blinkt_hat": {
+      "type": "8-pixel SPI LED HAT",
+      "library": "blinkt",
+      "note": "SPI-based, uses its own header — no manual pin assignment"
+    },
+    "led_backend_detection_order": ["blinkt (import blinkt)", "neopixel (import board; import neopixel)", "mock (console emoji)"],
+    "wavecube_dpi_projector": {
+      "interface": "RGB666 18-bit DPI via GPIO",
+      "overlay": "dtoverlay=dpi18",
+      "resolution": "640x360 @ 60Hz",
+      "timing": "640 0 14 4 12 360 0 2 3 9 0 0 0 60 0 32000000 6",
+      "gpu_mem": "64 MB",
+      "framebuffer": "/dev/fb0"
+    }
+  },
+  "docker_deployment_fleet": {
+    "_comment": "20 domain containers running on Pis via blackroad-os-deploy. Sequential port assignment.",
+    "deploy_api": {
+      "stack": ["postgres:16-alpine (:5432)", "deployment-api (Node.js :3000)", "caddy:2-alpine (:8080, :443)"],
+      "database_schema": ["deployments", "environment_variables", "deployment_logs", "domains", "users"]
+    },
+    "domain_containers": {
+      "api.blackroad.io": 3001,
+      "demo.blackroad.io": 3002,
+      "home.blackroad.io": 3003,
+      "creator-studio.blackroad.io": 3004,
+      "devops.blackroad.io": 3005,
+      "education.blackroad.io": 3006,
+      "finance.blackroad.io": 3007,
+      "ideas.blackroad.io": 3008,
+      "legal.blackroad.io": 3009,
+      "research-lab.blackroad.io": 3010,
+      "studio.blackroad.io": 3011,
+      "brand.blackroad.io": 3012,
+      "earth.blackroad.io": 3013,
+      "blackroadqi.com": 3020,
+      "blackroadquantum.info": 3021,
+      "blackroadquantum.net": 3022,
+      "blackroadquantum.shop": 3023,
+      "blackroadquantum.store": 3024,
+      "roadcoin.io": 3030,
+      "roadchain.io": 3031
+    },
+    "deploy_flow": "build image → docker save → scp tar → docker load → docker run --restart unless-stopped",
+    "supported_runtimes": ["python (3.11)", "nodejs (20)", "go (1.21)", "java", "rust", "csharp"],
+    "webhook_server": { "port": 9000, "path": "/webhook", "auth": "X-Hub-Signature-256 HMAC" }
+  },
+  "cloudflare_tunnels": {
+    "_comment": "Two Cloudflare tunnels — one for agents, one for deployment.",
+    "blackroad": {
+      "tunnel_id": "52915859-da18-4aa6-add5-7bd9fcac2e0b",
+      "running_on": "cecilia",
+      "protocol": "QUIC",
+      "routes": {
+        "agent.blackroad.ai": "localhost:8080",
+        "api.blackroad.ai": "localhost:3000"
+      }
+    },
+    "blackroad-deploy": {
+      "tunnel_id": "72f1d60c-dcf2-4499-b02d-d7a063018b33",
+      "target_hosts": ["gematria (159.65.43.12)", "alice (192.168.4.49)"],
+      "routes": {
+        "deploy-api.blackroad.systems": "localhost:3000",
+        "*.blackroad.systems": "localhost:8080 (Caddy)"
+      }
+    }
+  },
+  "storage_layouts": {
+    "_comment": "Disk layouts and data directories across the fleet.",
+    "cecilia_models": {
+      "path": "~/models/apple/",
+      "contents": {
+        "openelm/": "OpenELM model weights (3B, 1.1B)",
+        "fastvlm/": "Apple FastVLM vision-language",
+        "mobileclip/": "MobileCLIP",
+        "gguf/": "GGUF quantized for Ollama"
+      },
+      "datasets": ["~/datasets/apple/gsm-symbolic/ (12.5K samples)", "~/datasets/apple/clara/", "~/datasets/apple/mkqa/"],
+      "min_free_space_gb": 20
+    },
+    "pi_agent_install": {
+      "root": "/opt/blackroad/pi-agent/",
+      "venv": "/opt/blackroad/pi-agent/venv/",
+      "config": "/etc/blackroad/pi-agent.config.json",
+      "env_file": "/etc/blackroad/agent.env",
+      "log": "/var/log/blackroad/blackroad-agent.log"
+    },
+    "roadchain": {
+      "root": "~/.roadchain/",
+      "contents": {
+        "mining/": "hashrate.log, earnings.json, config.json",
+        "exchange/": "swaps.json, rates.json",
+        "mint/": "reserve.json, mint-log.json",
+        "compliance/": "audit_log.jsonl (hash-chained), classifications.json, aml_records.json, sar_flags.json, tax_basis.json",
+        "wallets/": "per-name JSON wallet files (alexa, lucidia, octavia, cecilia, aria, alice)"
+      }
+    }
+  },
+  "roadchain_exchange": {
+    "_comment": "RoadChain conversion pipeline: XMR → BTC → ROAD. Exchange backends and mint configuration.",
+    "exchange_backends": {
+      "changenow": { "api": "api.changenow.io/v2/", "kyc": "none for small amounts" },
+      "tradeogre": { "api": "tradeogre.com/api/v1/ticker/BTC-XMR", "kyc": "none" },
+      "coingecko": { "api": "api.coingecko.com/api/v3/simple/price", "type": "rates only" }
+    },
+    "rate_pairs": ["XMR/BTC", "XMR/USD", "VRSC/BTC", "VRSC/USD", "RTM/BTC", "RTM/USD", "BTC/USD"],
+    "mint": {
+      "ratio": "1 BTC = 1 ROAD",
+      "valuation_usd": 100000,
+      "btc_balance_api": "mempool.space/api/address/{addr}"
+    },
+    "compliance": {
+      "ctr_threshold_usd": 10000,
+      "sar_threshold_usd": 5000,
+      "structuring_window_seconds": 86400,
+      "audit_log": "append-only JSONL with SHA-256 hash chaining"
+    },
+    "road_wallet_format": "ROAD<40-char hex>"
+  },
+  "pi_agent_security": {
+    "_comment": "Security hardening on Pi agent service.",
+    "systemd_hardening": {
+      "NoNewPrivileges": true,
+      "ProtectSystem": "strict",
+      "ProtectHome": "read-only",
+      "PrivateTmp": true,
+      "MemoryMax": "256M",
+      "CPUQuota": "50%"
+    },
+    "blocked_commands": ["rm -rf /", "mkfs", "dd if=", "shutdown", "reboot", "init 0"],
+    "supported_task_types": ["shell", "script", "python", "file_read", "file_write", "service"],
+    "agent_id_source": "/proc/cpuinfo Serial (last 8 hex) → pi-<serial>",
+    "websocket_endpoint": "ws://operator.blackroad.local:8080/ws/agent",
+    "telemetry_collected": ["cpu%", "memory%", "disk (/ GB)", "temperature", "load_avg", "uptime", "network_io", "pi_model", "pi_revision", "pi_serial"]
+  },
+  "autonomous_workflows": {
+    "_comment": "GitHub Actions workflows for autonomous fleet operations.",
+    "orchestrator": {
+      "file": "autonomous-orchestrator.yml",
+      "schedule": "every 4 hours (0 */4 * * *)",
+      "triggers": ["push", "PR", "issues"],
+      "permissions": ["contents:write", "pull-requests:write", "issues:write", "actions:write", "security-events:write", "checks:write"],
+      "agent_api": "https://blackroad-agents.blackroad.workers.dev"
+    },
+    "self_healer": {
+      "file": "autonomous-self-healer.yml",
+      "schedule": "every 6 hours (30 */6 * * *)",
+      "triggers": ["workflow failure"],
+      "fix_types": ["all", "tests", "build", "lint", "deps", "security"]
+    },
+    "others": ["autonomous-cross-repo.yml", "autonomous-dependency-manager.yml", "autonomous-issue-manager.yml", "check-dependencies.yml", "workflow-index-sync.yml"]
+  },
+  "wavecube_boot_config": {
+    "_comment": "Pi boot overlay configuration for DLP2000 projector via DPI GPIO.",
+    "boot_config_path": ["/boot/config.txt", "/boot/firmware/config.txt"],
+    "overlay": "dtoverlay=dpi18",
+    "framebuffer": { "width": 640, "height": 360, "device": "/dev/fb0" },
+    "dpi_settings": {
+      "enable_dpi_lcd": 1,
+      "display_default_lcd": 1,
+      "dpi_group": 2,
+      "dpi_mode": 87,
+      "dpi_output_format": "0x6f016",
+      "dpi_timings": "640 0 14 4 12 360 0 2 3 9 0 0 0 60 0 32000000 6"
+    },
+    "gpu_mem_mb": 64,
+    "projector_blank_command": "sudo dd if=/dev/zero of=/dev/fb0",
+    "backup_suffix": ".wavecube.bak",
+    "display_deps": ["python3-pygame", "python3-numpy", "fbi", "portaudio19-dev", "python3-pyaudio", "libsdl2-dev"]
+  },
   "totals": {
     "top_level_devices": 21,
     "sub_devices": 14,
@@ -923,6 +1122,13 @@
     "conductor_voice_banks": 5,
     "conductor_gestures": 12,
     "wavecube_apps": 8,
-    "cece_identity_version": "2.2.0"
+    "cece_identity_version": "2.2.0",
+    "mqtt_topics": 6,
+    "domain_containers": 20,
+    "cloudflare_tunnels": 2,
+    "autonomous_workflows": 7,
+    "exchange_backends": 3,
+    "gpio_mappings": 3,
+    "blocked_shell_commands": 6
   }
 }
