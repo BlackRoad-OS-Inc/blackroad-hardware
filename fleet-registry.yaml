@@ -1,16 +1,16 @@
 # BlackRoad Fleet Registry — Machine-Readable Device Inventory
 # Source of truth for automation and tooling
-# Version: 2.1.0
-# Updated: 2026-02-21
+# Version: 2.2.0
+# Updated: 2026-02-22
 # Verified: Live SSH + ARP + ping probes
 
 fleet:
-  version: "2.1.0"
-  updated: "2026-02-21"
+  version: "2.2.0"
+  updated: "2026-02-22"
   owner: "BlackRoad OS, Inc."
   domain: "blackroad.io"
   tailnet: "blackroad"
-  total_devices: 21
+  total_devices: 22
   unidentified_devices: 4
   confirmed_ai_tops: 41.8  # 1x Hailo-8 (26) + M1 NE (15.8)
   potential_ai_tops: 134    # If all accelerators installed
@@ -28,6 +28,9 @@ fleet:
     mesh:
       description: "ESP32 LoRa + MCU array"
       count: 21
+    xr:
+      description: "XR/VR headsets — spatial agents + interface"
+      count: 1
     consumer:
       description: "Roku, Xbox, iPhone, MacBooks"
       count: 7
@@ -383,6 +386,38 @@ fleet:
       roles:
         - mobile
       status: active
+
+    # ── XR Devices ──────────────────────────────────────────────
+    - name: andromeda
+      tier: xr
+      hardware: "Meta Quest 2"
+      soc: "Qualcomm Snapdragon XR2"
+      cpu: "Octa-core Kryo 585 @ 2.84GHz"
+      gpu: "Adreno 650"
+      ram: "6GB LPDDR5"
+      storage: "128GB"  # update if 256GB
+      os: "Horizon OS (Android 10 base)"
+      display: "Dual LCD 1832×1920 per eye @ 72/90Hz"
+      connectivity: "WiFi 6 (802.11ax), Bluetooth 5.1, USB-C 3.0"
+      ip_local: null  # update after: scripts/quest-adb.sh wifi-enable + connect
+      adb_port: 5555
+      adb_tool: "SideQuest platform-tools (installed on alexandria)"
+      management_script: "scripts/quest-adb.sh"
+      roles:
+        - xr_interface
+        - spatial_agent
+      services:
+        - termux           # Android terminal / agent runtime
+      agent_runtime: "Termux + Python + blackroad-agents"
+      future:
+        - blackroad-xr-app  # custom APK (apps/android/ in blackroad-agents)
+      notes: |
+        Standalone Android XR headset. Dev mode enabled via Meta app.
+        Connect USB-C to alexandria for ADB. After WiFi ADB enabled,
+        runs wirelessly on LAN. Termux provides full Linux environment
+        for running BlackRoad agents that connect to gateway cluster.
+      setup_doc: "devices/xr-headsets.md"
+      status: setup_pending  # needs WiFi ADB + Termux bootstrap
 
     # ── Retired ─────────────────────────────────────────────────
     - name: sensecap-watcher-w1a
