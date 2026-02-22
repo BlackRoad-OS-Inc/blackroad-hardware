@@ -1,0 +1,60 @@
+# BlackRoad Network Topology
+# Automatically generated — do not edit manually
+
+network:
+  name: blackroad
+  domain: blackroad.local
+  subnet: 192.168.4.0/24
+  gateway: 192.168.4.1
+  dns: [1.1.1.1, 8.8.8.8]
+
+  segments:
+    production:
+      description: "Always-on Pi cluster + cloud"
+      devices:
+        - name: blackroad-pi
+          ip: 192.168.4.64
+          role: primary-agent-host
+          os: Raspberry Pi OS (64-bit)
+          tunnel: cloudflared (QUIC)
+          services: [ollama, agent-runtime, cloudflared]
+
+        - name: lucidia
+          ip: 192.168.4.38
+          role: secondary-agent-host
+          os: Raspberry Pi OS (64-bit)
+          services: [ollama, agent-runtime]
+
+        - name: alice
+          ip: 192.168.4.99
+          role: tertiary
+          os: Raspberry Pi OS (64-bit)
+          services: [agent-runtime]
+
+        - name: blackroad-infinity
+          ip: 159.65.43.12
+          role: cloud-failover
+          provider: DigitalOcean
+          region: nyc3
+          services: [agent-runtime, nginx]
+
+    mobile:
+      devices:
+        - name: iphone-koder
+          ip: 192.168.4.68
+          port: 8080
+          role: mobile-dev
+
+    edge:
+      description: "Jetson + constellation Pis"
+      pending: true
+
+  tunnels:
+    cloudflare:
+      id: 52915859-da18-4aa6-add5-7bd9fcac2e0b
+      name: blackroad
+      protocol: QUIC
+      edge: dfw08
+      routes:
+        - agent.blackroad.ai → localhost:8080
+        - api.blackroad.ai → localhost:3000
