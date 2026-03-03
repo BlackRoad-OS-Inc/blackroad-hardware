@@ -11,7 +11,7 @@ on:
 jobs:
   lint-validate:
     name: Lint & Validate
-    runs-on: [self-hosted, blackroad-fleet]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - name: No hardcoded secrets
@@ -36,20 +36,19 @@ jobs:
 
   test:
     name: Python Tests
-    runs-on: [self-hosted, blackroad-fleet]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: {python-version: '3.12'}
       - run: pip install -r requirements.txt --quiet
-      - run: pytest tests/ -v --tb=short 2>/dev/null || echo "No tests yet"
-        continue-on-error: true
+      - run: pytest tests/ -v --tb=short
       - name: ✅ Tests complete
         run: echo "Hardware CI passed"
 
   fleet-health:
     name: Fleet Schema Validation
-    runs-on: [self-hosted, blackroad-fleet]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
