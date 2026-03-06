@@ -6,8 +6,13 @@ import hashlib
 import socket
 import subprocess
 from dataclasses import dataclass, field, asdict
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
+
+
+def _utcnow_iso() -> str:
+    """Return current UTC time as ISO 8601 string with Z suffix."""
+    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S") + "Z"
 
 
 @dataclass
@@ -20,10 +25,13 @@ class PiNode:
     status_port: int = 8182
     agent_capacity: int = 0
     model: str = "unknown"
-    
+
     def __post_init__(self):
         if not re.match(r'^\d{1,3}(\.\d{1,3}){3}$', self.ip):
             raise ValueError(f"Invalid IP address: {self.ip}")
+        octets = [int(o) for o in self.ip.split('.')]
+        if any(o < 0 or o > 255 for o in octets):
+            raise ValueError(f"Invalid IP address: {self.ip} (octet out of range)")
         if self.role not in {"primary", "secondary", "relay", "failover", "edge"}:
             raise ValueError(f"Invalid role: {self.role}")
 
@@ -38,38 +46,46 @@ class PiNode:
 class FleetRegistry:
     version: str = "1.0"
     nodes: list[PiNode] = field(default_factory=list)
-    
+
     def add_node(self, node: PiNode) -> None:
+        if any(n.node_id == node.node_id for n in self.nodes):
+            raise ValueError(f"Duplicate node ID: {node.node_id}")
         self.nodes.append(node)
-    
+
+    def remove_node(self, node_id: str) -> None:
+        node = self.get_node(node_id)
+        if node is None:
+            raise ValueError(f"Unknown node ID: {node_id}")
+        self.nodes.remove(node)
+
     def get_node(self, node_id: str) -> Optional[PiNode]:
         return next((n for n in self.nodes if n.node_id == node_id), None)
-    
+
     def total_capacity(self) -> int:
         return sum(n.agent_capacity for n in self.nodes)
-    
+
     def primary_nodes(self) -> list[PiNode]:
         return [n for n in self.nodes if n.role == "primary"]
-    
+
     def to_json(self) -> str:
         return json.dumps({
             "version": self.version,
             "nodes": [n.to_dict() for n in self.nodes],
             "total_capacity": self.total_capacity(),
-            "generated_at": datetime.utcnow().isoformat() + "Z"
+            "generated_at": _utcnow_iso()
         }, indent=2)
 
 
-@dataclass 
+@dataclass
 class SensorReading:
     device_id: str
     cpu_pct: float
     ram_free_gb: float
     disk_free_gb: float
-    timestamp: str = field(default_factory=lambda: datetime.utcnow().isoformat() + "Z")
+    timestamp: str = field(default_factory=_utcnow_iso)
     temperature_c: Optional[float] = None
     worlds_generated: int = 0
-    
+
     def __post_init__(self):
         if not 0 <= self.cpu_pct <= 100:
             raise ValueError(f"CPU percentage out of range: {self.cpu_pct}")

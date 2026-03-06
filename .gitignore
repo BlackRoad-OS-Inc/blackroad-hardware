@@ -19,5 +19,16 @@ Thumbs.db
 *.tmp
 *.log
 
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+*.egg-info/
+dist/
+build/
+.coverage
+htmlcov/
+
 # Moved to blackroad-agents
 agents.json
