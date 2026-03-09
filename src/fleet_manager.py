@@ -3,11 +3,14 @@ from __future__ import annotations
 import re
 import json
 import hashlib
-import socket
-import subprocess
 from dataclasses import dataclass, field, asdict
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
+
+
+def _utcnow_iso() -> str:
+    """Return current UTC time as an ISO 8601 string ending in 'Z'."""
+    return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
 
 
 @dataclass
@@ -23,6 +26,8 @@ class PiNode:
     
     def __post_init__(self):
         if not re.match(r'^\d{1,3}(\.\d{1,3}){3}$', self.ip):
+            raise ValueError(f"Invalid IP address: {self.ip}")
+        if any(int(o) > 255 for o in self.ip.split('.')):
             raise ValueError(f"Invalid IP address: {self.ip}")
         if self.role not in {"primary", "secondary", "relay", "failover", "edge"}:
             raise ValueError(f"Invalid role: {self.role}")
@@ -40,10 +45,18 @@ class FleetRegistry:
     nodes: list[PiNode] = field(default_factory=list)
     
     def add_node(self, node: PiNode) -> None:
+        if self.get_node(node.node_id) is not None:
+            raise ValueError(f"Node already registered: {node.node_id}")
         self.nodes.append(node)
     
     def get_node(self, node_id: str) -> Optional[PiNode]:
         return next((n for n in self.nodes if n.node_id == node_id), None)
+    
+    def remove_node(self, node_id: str) -> None:
+        node = self.get_node(node_id)
+        if node is None:
+            raise KeyError(f"Node not found: {node_id}")
+        self.nodes.remove(node)
     
     def total_capacity(self) -> int:
         return sum(n.agent_capacity for n in self.nodes)
@@ -56,7 +69,7 @@ class FleetRegistry:
             "version": self.version,
             "nodes": [n.to_dict() for n in self.nodes],
             "total_capacity": self.total_capacity(),
-            "generated_at": datetime.utcnow().isoformat() + "Z"
+            "generated_at": _utcnow_iso()
         }, indent=2)
 
 
@@ -66,7 +79,7 @@ class SensorReading:
     cpu_pct: float
     ram_free_gb: float
     disk_free_gb: float
-    timestamp: str = field(default_factory=lambda: datetime.utcnow().isoformat() + "Z")
+    timestamp: str = field(default_factory=_utcnow_iso)
     temperature_c: Optional[float] = None
     worlds_generated: int = 0
     
